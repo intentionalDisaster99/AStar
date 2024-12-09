@@ -170,14 +170,13 @@ function explore(open, closed, working_node, end) {
                     open.add(new Node(node.pos.copy(), working_node, working_node.cost + ((dir[i].x !== 0 && dir[i].y !== 0 ? DIAGONAL_COST : 1)), node.heuristic));
 
                 }
-
                 skip = true;
-                // break;
+                break;
             }
         }
 
         // Not doing it if they go outside the bound
-        if (new_pos.x < -width / 2 || new_pos.y < -height / 2 || new_pos.x > width / 2 || new_pos.y > height / 2) {
+        if (skip || new_pos.x < -width / 2 || new_pos.y < -height / 2 || new_pos.x > width / 2 || new_pos.y > height / 2) {
             continue;
         }
 
@@ -195,12 +194,17 @@ function explore(open, closed, working_node, end) {
                     closed[j].cost = new_cost;
                     closed[j].last = working_node;
                     closed[j].score = closed[j].cost + closed[j].heuristic;
+
+                    open.list.unshift(closed.splice(j, 1)[0]);
                 }
                 skip = true;
+                break;
             }
         }
+
         // Skipping early to save some time
         if (skip) { continue; }
+
         // Not allowing it if it is inside one of the walls
         for (let i = 0; i < walls.length; i++) {
             if (walls[i].is_inside(createVector(new_pos.x, new_pos.y))) {
@@ -228,7 +232,7 @@ class Node {
         this.pos = pos;
         this.last = last;
         this.cost = cost;
-        this.heuristic = heuristic / 2; // Weighted so that our path is slightly better
+        this.heuristic = heuristic;
         this.score = this.cost + this.heuristic;
     }
 
